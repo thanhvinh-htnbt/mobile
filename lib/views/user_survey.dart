@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/constants/app_color.dart';
+import 'package:mobile/views/select_box.dart';
 
 class UserSurvey extends StatefulWidget {
   const UserSurvey({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _UserSurveyState createState() => _UserSurveyState();
 }
 
@@ -14,22 +16,24 @@ class _UserSurveyState extends State<UserSurvey> {
   String _selectedGoal = '';
   String _selectedGender = '';
   final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
   final TextEditingController _weightGoalController = TextEditingController();
   double _goalPerWeek = 0.2;
-  void _nextStep() {
-    setState(() {
-      if (_currentStep < 4) {
-        _currentStep++;
-      }
-    });
-  }
+  String _selectedActivityLevel = '';
 
   void _previousStep() {
     setState(() {
       if (_currentStep > 0) {
         _currentStep--;
+      }
+    });
+  }
+
+  void _nextStep() {
+    setState(() {
+      if (_currentStep < 5) {
+        _currentStep++;
       }
     });
   }
@@ -45,25 +49,23 @@ class _UserSurveyState extends State<UserSurvey> {
         child: Column(
           children: <Widget>[
             LinearProgressIndicator(
-              value: (_currentStep + 1) / 4,
+              value: (_currentStep + 1) / 6,
               color: Colors.green,
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: _currentStep == 0
-                    ? StepOne(nameController: _nameController)
-                    : _currentStep == 1
-                        ? StepTwo(
-                            selectedGoal: _selectedGoal,
-                            onGoalSelected: (goal) {
-                              setState(() {
-                                _selectedGoal = goal;
-                              });
-                            },
-                          )
-                        : _currentStep == 2
+              child: _currentStep == 0
+                  ? StepOne(nameController: _nameController)
+                  : _currentStep == 1
+                      ? StepTwo(
+                          selectedGoal: _selectedGoal,
+                          onGoalSelected: (goal) {
+                            setState(() {
+                              _selectedGoal = goal;
+                            });
+                          },
+                        )
+                      : _currentStep == 2
                           ? StepThree(
                               selectedGender: _selectedGender,
                               onGenderSelected: (gender) {
@@ -74,28 +76,37 @@ class _UserSurveyState extends State<UserSurvey> {
                               ageController: _ageController,
                               heightController: _heightController,
                               weightController: _weightController,
-                            )  
+                            )
                           : _currentStep == 3
-                            ? StepFour(
-                                weightGoalController: _weightGoalController,
-                                goalPerWeek: _goalPerWeek,
-                                onGoalPerWeekSelected: (goal) {
-                                  setState(() {
-                                    _goalPerWeek = goal;
-                                  });
-                                },
-                              )
-                             : Summary(
-                                name: _nameController.text,
-                                goal: _selectedGoal,
-                                gender: _selectedGender,
-                                age: _ageController.text,
-                                height: _heightController.text,
-                                weight: _weightController.text,
-                                weightGoal: _weightGoalController.text,
-                                goalPerWeek: _goalPerWeek,
-                              ),
-              ),
+                              ? StepFour(
+                                  weightGoalController: _weightGoalController,
+                                  goalPerWeek: _goalPerWeek,
+                                  onGoalPerWeekSelected: (goal) {
+                                    setState(() {
+                                      _goalPerWeek = goal;
+                                    });
+                                  },
+                                )
+                              : _currentStep == 4
+                                  ? StepFive(
+                                      selectedActivityLevel: _selectedActivityLevel,
+                                      onActivityLevelSelected: (activityLevel) {
+                                        setState(() {
+                                          _selectedActivityLevel = activityLevel;
+                                        });
+                                      },
+                                    )
+                                  : Summary(
+                                      name: _nameController.text,
+                                      goal: _selectedGoal,
+                                      gender: _selectedGender,
+                                      age: _ageController.text,
+                                      height: _heightController.text,
+                                      weight: _weightController.text,
+                                      weightGoal: _weightGoalController.text,
+                                      goalPerWeek: _goalPerWeek,
+                                      activityLevel: _selectedActivityLevel,
+                                    ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -113,7 +124,7 @@ class _UserSurveyState extends State<UserSurvey> {
                   child: ElevatedButton(
                     onPressed: _nextStep,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor, // Background color
+                      backgroundColor: AppColors.primaryColor,
                     ),
                     child: const Text('Next', style: TextStyle(color: AppColors.inverseTextColor)),
                   ),
@@ -146,7 +157,7 @@ class StepOne extends StatelessWidget {
               border: OutlineInputBorder(),
               labelText: 'Enter your name',
             ),
-            style: TextStyle(color: AppColors.defaultTextColor),
+            style: const TextStyle(color: AppColors.defaultTextColor),
           ),
         ),
       ],
@@ -165,62 +176,24 @@ class StepTwo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Text('What is your goal?'),
-        GestureDetector(
-          onTap: () {
-            onGoalSelected('Gain Weight');
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.backgroundColor2,
-              border: Border.all(
-                color: selectedGoal == 'Gain Weight'
-                    ? AppColors.primaryColor
-                    : Colors.transparent,
-              ),
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: ListTile(
-              title: const Text('Gain Weight'),
-              leading: Checkbox(
-                value: selectedGoal == 'Gain Weight',
-                onChanged: (bool? value) {
-                  onGoalSelected(value! ? 'Gain Weight' : '');
-                },
-              ),
-            ),
-          ),
+        const Text('Step 2: What is your goal?'),
+        SelectBox<String>(
+          title: 'Gain Weight',
+          value: 'Gain Weight',
+          groupValue: selectedGoal,
+          onChanged: onGoalSelected,
         ),
-        const SizedBox(height: 10),
-        GestureDetector(
-          onTap: () {
-            onGoalSelected('Lose Weight');
-          },         
-          child: Container(
-            decoration: BoxDecoration(
-              color:AppColors.backgroundColor2,
-              border: Border.all(
-                color: selectedGoal == 'Lose Weight'
-                    ? AppColors.primaryColor
-                    : Colors.transparent,
-              ),
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: ListTile(
-              title: const Text('Lose Weight'),
-              leading: Checkbox(
-                value: selectedGoal == 'Lose Weight',
-                onChanged: (bool? value) {
-                  onGoalSelected(value! ? 'Lose Weight' : '');
-                },
-              ),
-            ),
-          ),
+        SelectBox<String>(
+          title: 'Lose Weight',
+          value: 'Lose Weight',
+          groupValue: selectedGoal,
+          onChanged: onGoalSelected,
         ),
       ],
     );
   }
 }
+
 class StepThree extends StatelessWidget {
   final String selectedGender;
   final ValueChanged<String> onGenderSelected;
@@ -241,61 +214,24 @@ class StepThree extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Text('Tell us more about you'),
+        const Text('Step 3: Tell us more about you'),
         Row(
           children: <Widget>[
             Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  onGenderSelected('Male');
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                  color:AppColors.backgroundColor2,
-                    border: Border.all(
-                      color: selectedGender == 'Male'
-                          ? AppColors.primaryColor
-                          : Colors.transparent,
-                    ),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: ListTile(
-                    title: const Text('Male'),
-                    leading: Checkbox(
-                      value: selectedGender == 'Male',
-                      onChanged: (bool? value) {
-                        onGenderSelected(value! ? 'Male' : '');
-                      },
-                    ),
-                  ),
-                ),
+              child: SelectBox<String>(
+                title: 'Male',
+                value: 'Male',
+                groupValue: selectedGender,
+                onChanged: onGenderSelected,
               ),
             ),
+            const SizedBox(width: 10),
             Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  onGenderSelected('Female');
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color:AppColors.backgroundColor2,
-                    border: Border.all(
-                      color: selectedGender == 'Female'
-                          ? AppColors.primaryColor
-                          : Colors.transparent,
-                    ),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: ListTile(
-                    title: const Text('Female'),
-                    leading: Checkbox(
-                      value: selectedGender == 'Female',
-                      onChanged: (bool? value) {
-                        onGenderSelected(value! ? 'Female' : '');
-                      },
-                    ),
-                  ),
-                ),
+              child: SelectBox<String>(
+                title: 'Female',
+                value: 'Female',
+                groupValue: selectedGender,
+                onChanged: onGenderSelected,
               ),
             ),
           ],
@@ -309,7 +245,7 @@ class StepThree extends StatelessWidget {
               labelText: 'Enter your age',
             ),
             keyboardType: TextInputType.number,
-            style: TextStyle(color: AppColors.defaultTextColor),
+            style: const TextStyle(color: AppColors.defaultTextColor),
           ),
         ),
         Padding(
@@ -321,7 +257,7 @@ class StepThree extends StatelessWidget {
               labelText: 'Enter your height (cm)',
             ),
             keyboardType: TextInputType.number,
-            style: TextStyle(color: AppColors.defaultTextColor),
+            style: const TextStyle(color: AppColors.defaultTextColor),
           ),
         ),
         Padding(
@@ -333,13 +269,14 @@ class StepThree extends StatelessWidget {
               labelText: 'Enter your weight (kg)',
             ),
             keyboardType: TextInputType.number,
-            style: TextStyle(color: AppColors.defaultTextColor),
+            style: const TextStyle(color: AppColors.defaultTextColor),
           ),
         ),
       ],
     );
   }
 }
+
 class StepFour extends StatelessWidget {
   final TextEditingController weightGoalController;
   final double goalPerWeek;
@@ -366,69 +303,76 @@ class StepFour extends StatelessWidget {
               labelText: 'Enter your weight goal (kg)',
             ),
             keyboardType: TextInputType.number,
-            style: TextStyle(color: AppColors.defaultTextColor),
+            style: const TextStyle(color: AppColors.defaultTextColor),
           ),
         ),
-        GestureDetector(
-          onTap: () {
-            onGoalPerWeekSelected(0.2);
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: goalPerWeek == 0.2
-                  ? AppColors.backgroundColor2
-                  : Colors.transparent,
-              border: Border.all(
-                color: goalPerWeek == 0.2
-                    ? AppColors.primaryColor
-                    : Colors.transparent,
-              ),
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: ListTile(
-              title: const Text('0.2 kg per week'),
-              leading: Radio<double>(
-                value: 0.2,
-                groupValue: goalPerWeek,
-                onChanged: (double? value) {
-                  onGoalPerWeekSelected(value!);
-                },
-              ),
-            ),
-          ),
+        SelectBox<double>(
+          title: '0.2 kg per week',
+          value: 0.2,
+          groupValue: goalPerWeek,
+          onChanged: onGoalPerWeekSelected,
         ),
-        GestureDetector(
-          onTap: () {
-            onGoalPerWeekSelected(0.5);
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: goalPerWeek == 0.5
-                  ? AppColors.backgroundColor2
-                  : Colors.transparent,
-              border: Border.all(
-                color: goalPerWeek == 0.5
-                    ? AppColors.primaryColor
-                    : Colors.transparent,
-              ),
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: ListTile(
-              title: const Text('0.5 kg per week'),
-              leading: Radio<double>(
-                value: 0.5,
-                groupValue: goalPerWeek,
-                onChanged: (double? value) {
-                  onGoalPerWeekSelected(value!);
-                },
-              ),
-            ),
-          ),
+        SelectBox<double>(
+          title: '0.5 kg per week',
+          value: 0.5,
+          groupValue: goalPerWeek,
+          onChanged: onGoalPerWeekSelected,
         ),
       ],
     );
   }
 }
+
+class StepFive extends StatelessWidget {
+  final String selectedActivityLevel;
+  final ValueChanged<String> onActivityLevelSelected;
+
+  const StepFive({super.key, 
+    required this.selectedActivityLevel,
+    required this.onActivityLevelSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text('Step 5: Select your activity level'),
+        SelectBox<String>(
+          title: 'Sedentary (little or no exercise): BMR × 1.2',
+          value: 'Sedentary',
+          groupValue: selectedActivityLevel,
+          onChanged: onActivityLevelSelected,
+        ),
+        SelectBox<String>(
+          title: 'Lightly active (light exercise/sports 1-3 days/week): BMR × 1.375',
+          value: 'Lightly active',
+          groupValue: selectedActivityLevel,
+          onChanged: onActivityLevelSelected,
+        ),
+        SelectBox<String>(
+          title: 'Moderately active (moderate exercise/sports 3-5 days/week): BMR × 1.55',
+          value: 'Moderately active',
+          groupValue: selectedActivityLevel,
+          onChanged: onActivityLevelSelected,
+        ),
+        SelectBox<String>(
+          title: 'Very active (hard exercise/sports 6-7 days a week): BMR × 1.725',
+          value: 'Very active',
+          groupValue: selectedActivityLevel,
+          onChanged: onActivityLevelSelected,
+        ),
+        SelectBox<String>(
+          title: 'Extra active (very hard exercise/sports & physical job or 2x training): BMR × 1.9',
+          value: 'Extra active',
+          groupValue: selectedActivityLevel,
+          onChanged: onActivityLevelSelected,
+        ),
+      ],
+    );
+  }
+}
+
 class Summary extends StatelessWidget {
   final String name;
   final String goal;
@@ -438,8 +382,9 @@ class Summary extends StatelessWidget {
   final String weight;
   final String weightGoal;
   final double goalPerWeek;
+  final String activityLevel;
 
-  Summary({
+  const Summary({super.key, 
     required this.name,
     required this.goal,
     required this.gender,
@@ -448,10 +393,49 @@ class Summary extends StatelessWidget {
     required this.weight,
     required this.weightGoal,
     required this.goalPerWeek,
+    required this.activityLevel,
   });
+
+  double calculateBMR() {
+    double weight = double.parse(this.weight);
+    double height = double.parse(this.height);
+    int age = int.parse(this.age);
+    double bmr;
+
+    if (gender == 'Male') {
+      bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+    } else {
+      bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+    }
+
+    double activityFactor;
+    switch (activityLevel) {
+      case 'Sedentary':
+        activityFactor = 1.2;
+        break;
+      case 'Lightly active':
+        activityFactor = 1.375;
+        break;
+      case 'Moderately active':
+        activityFactor = 1.55;
+        break;
+      case 'Very active':
+        activityFactor = 1.725;
+        break;
+      case 'Extra active':
+        activityFactor = 1.9;
+        break;
+      default:
+        activityFactor = 1.0;
+    }
+
+    return bmr * activityFactor;
+  }
 
   @override
   Widget build(BuildContext context) {
+    double bmr = calculateBMR();
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -467,6 +451,8 @@ class Summary extends StatelessWidget {
           Text('Weight: $weight kg'),
           Text('Weight Goal: $weightGoal kg'),
           Text('Goal per Week: ${goalPerWeek.toString()} kg'),
+          Text('Activity Level: $activityLevel'),
+          Text('BMR: ${bmr.toStringAsFixed(2)} kcal/day'),
         ],
       ),
     );
