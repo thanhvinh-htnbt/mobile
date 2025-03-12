@@ -17,9 +17,11 @@ class UserLogin extends StatelessWidget {
 
             TextFormField(
               decoration: const InputDecoration(labelText: 'Email'),
+              style: TextStyle(color: Colors.black),
             ),
             TextFormField(
               decoration: const InputDecoration(labelText: 'Password'),
+              style: TextStyle(color: Colors.black),
               obscureText: true,
             ),
             const SizedBox(height: 20),
